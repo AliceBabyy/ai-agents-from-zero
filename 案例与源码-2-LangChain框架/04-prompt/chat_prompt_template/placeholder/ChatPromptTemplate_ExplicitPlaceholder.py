@@ -20,9 +20,9 @@ prompt = ChatPromptTemplate.from_messages(
             "system",
             "你是一个资深的Python应用开发工程师，请认真回答我提出的Python相关的问题",
         ),  # role 须为标准名：system / human / ai（不可自创如 system1）；也可写 SystemMessage(content="...")
-        MessagesPlaceholder(
-            "memory"
-        ),  # 变量名可自取，如 "history"、"chat_history" 等，invoke 时键与之一致即可
+
+        MessagesPlaceholder("memory"),  # 变量名可自取，如 "history"、"chat_history" 等，invoke 时键与之一致即可
+
         ("human", "{question}"),
     ]
 )
