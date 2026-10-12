@@ -254,7 +254,7 @@ from langchain.agents import create_agent
 ("placeholder", "{agent_scratchpad}")
 ```
 
-其中 `ChatPromptTemplate`、占位符与消息结构，与 [第 13 章 提示词与消息模板](13-提示词与消息模板.md) 一脉相承；这里多出来的 `{agent_scratchpad}` 专供多轮工具循环使用。
+其中 `ChatPromptTemplate`、占位符与消息结构，与 [第 13 章 提示词与消息模板](13？-提示词与消息模板.md) 一脉相承；这里多出来的 `{agent_scratchpad}` 专供多轮工具循环使用。
 
 这不是装饰，它的作用非常关键。它相当于 Agent 的“草稿区 / 中间步骤区”，用来承接：模型上一轮决定调用什么工具；工具返回了什么；下一轮模型基于这些信息继续推理。
 
