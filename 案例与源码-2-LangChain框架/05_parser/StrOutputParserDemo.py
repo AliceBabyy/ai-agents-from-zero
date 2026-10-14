@@ -24,44 +24,47 @@ from loguru import logger
 
 load_dotenv(encoding="utf-8")
 
-# 构造对话模板（与第 13 章 ChatPromptTemplate 用法一致）
-chat_prompt = ChatPromptTemplate.from_messages(
-    [
-        ("system", "你是一个{role}，请简短回答我提出的问题"),
-        ("human", "请回答:{question}"),
-    ]
-)
 
-# 填充占位符，得到消息列表，供模型使用
-prompt = chat_prompt.invoke(
-    {"role": "AI助手", "question": "什么是LangChain，简洁回答100字以内"}
-)
-logger.info(prompt)
+def main():
+    # 构造对话模板（与第 13 章 ChatPromptTemplate 用法一致）
+    chat_prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", "你是一个{role}，请简短回答我提出的问题"),
+            ("human", "请回答:{question}"),
+        ]
+    )
 
-# 初始化大模型（需配置 API Key 等）
-model = init_chat_model(
-    model="qwen-plus",
-    model_provider="openai",
-    api_key=os.getenv("aliQwen-api"),
-    base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
-)
+    # 填充占位符，得到消息列表，供模型使用
+    prompt = chat_prompt.invoke(
+        {"role": "AI助手", "question": "什么是LangChain，简洁回答100字以内"}
+    )
+    logger.info(prompt)
 
-# 调用模型：传入 prompt，得到的是 AIMessage 等对象（原始输出）
-result = model.invoke(prompt)
-logger.info(f"模型原始输出:\n{result}")
+    # 初始化大模型（需配置 API Key 等）
+    model = init_chat_model(
+        model="qwen-plus",
+        model_provider="openai",
+        api_key=os.getenv("aliQwen-api"),
+        base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+    )
 
-# 创建字符串解析器：只做「从 result 里取 content 转成 str」
-# 单条 AIMessage 时确实等价于 result.content；用解析器的好处：可链式组合（prompt | model | parser）、
-# 流式时统一处理 chunk、多条消息时按约定取最后一条等，且与 JsonOutputParser 等接口一致便于替换。
-parser = StrOutputParser()
+    # 调用模型：传入 prompt，得到的是 AIMessage 等对象（原始输出）
+    result = model.invoke(prompt)
+    logger.info(f"模型原始输出:\n{result}")
 
-# 解析：parser.invoke(result) 等价于从 result 中取 content，得到纯字符串
-response = parser.invoke(result)
-logger.info(f"解析后的结构化结果:\n{response}")
-logger.info("\n")
-logger.info(
-    f"结果类型: {type(response)}"
-)  # 输出示例: <class 'langchain_core.messages.base.TextAccessor'>
+    # 创建字符串解析器：只做「从 result 里取 content 转成 str」
+    # 单条 AIMessage 时确实等价于 result.content；用解析器的好处：可链式组合（prompt | model | parser）、
+    # 流式时统一处理 chunk、多条消息时按约定取最后一条等，且与 JsonOutputParser 等接口一致便于替换。
+    parser = StrOutputParser()
+
+    # 解析：parser.invoke(result) 等价于从 result 中取 content，得到纯字符串
+    response = parser.invoke(result)
+    logger.info(f"解析后的结构化结果:\n{response}")
+    logger.info("\n")
+    logger.info(
+        f"结果类型: {type(response)}"
+    )  # 输出示例: <class 'langchain_core.messages.base.TextAccessor'>
+
 
 """
 【输出示例】
@@ -72,3 +75,5 @@ content='LangChain 是一个开源框架，用于构建基于大语言模型（L
 LangChain 是一个开源框架，用于构建基于大语言模型（LLM）的应用程序。它提供模块化组件（如链、代理、记忆、工具等），支持提示工程、数据检索增强（RAG）、多步推理和外部工具调用，简化 LLM 应用的开发与集成。
 2026-02-27 14:32:54.777 | INFO     | __main__:<module>:57 -
 """
+if __name__ == "__main__":
+    main()

@@ -19,10 +19,11 @@ from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
 from loguru import logger
 from pydantic import BaseModel, Field
+# 引用了pydantic库里的这俩东西：BaseModel是定义数据格式的基类；Field是给字段加限制约束
 
 load_dotenv(encoding="utf-8")
 
-
+# 使用了pydantic库中的basemodel基类，这就是个pydantic模型
 class Person(BaseModel):
     """定义一条「新闻」的结构：时间、人物、事件。用于约束模型输出的 JSON 形状。"""
 
@@ -30,41 +31,44 @@ class Person(BaseModel):
     person: str = Field(description="人物")
     event: str = Field(description="事件")
 
+def main():
+    # 绑定 Pydantic 模型：主要驱动 get_format_instructions() 的 schema；invoke 后得到 dict
+    # pydantic_object是json输出解析器里的一个参数，用于绑定pydantic模型
+    parser = JsonOutputParser(pydantic_object=Person)
 
-# 绑定 Pydantic 模型：主要驱动 get_format_instructions() 的 schema；invoke 后得到 dict
-parser = JsonOutputParser(pydantic_object=Person)
+    # 获取「格式说明」：描述 Person 各字段，便于拼进提示词让模型按此输出
+    format_instructions = parser.get_format_instructions()
+    logger.info(format_instructions)
 
-# 获取「格式说明」：描述 Person 各字段，便于拼进提示词让模型按此输出
-format_instructions = parser.get_format_instructions()
+    # 在 human 消息里加入 {format_instructions}，模型会看到「请按如下格式输出 JSON …」
+    chat_prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", "你是一个AI助手，你只能输出结构化JSON数据。"),
+            ("human", "请生成一个关于{topic}的新闻。{format_instructions}"),
+        ]
+    )
 
-# 在 human 消息里加入 {format_instructions}，模型会看到「请按如下格式输出 JSON …」
-chat_prompt = ChatPromptTemplate.from_messages(
-    [
-        ("system", "你是一个AI助手，你只能输出结构化JSON数据。"),
-        ("human", "请生成一个关于{topic}的新闻。{format_instructions}"),
-    ]
-)
+    # 填 topic 和 format_instructions，得到消息列表
+    prompt = chat_prompt.format_messages(
+        topic="小米su7跑车", format_instructions=format_instructions
+    )
+    logger.info(prompt)
 
-# 填 topic 和 format_instructions，得到消息列表
-prompt = chat_prompt.format_messages(
-    topic="小米su7跑车", format_instructions=format_instructions
-)
-logger.info(prompt)
+    model = init_chat_model(
+        model="qwen-plus",
+        model_provider="openai",
+        api_key=os.getenv("aliQwen-api"),
+        base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+    )
 
-model = init_chat_model(
-    model="qwen-plus",
-    model_provider="openai",
-    api_key=os.getenv("aliQwen-api"),
-    base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
-)
+    result = model.invoke(prompt)
+    logger.info(f"模型原始输出:\n{result}")
 
-result = model.invoke(prompt)
-logger.info(f"模型原始输出:\n{result}")
+    # 用同一解析器解析，得到符合 Person 结构的数据（dict，或可转成 Person 实例）
+    response = parser.invoke(result)
+    logger.info(f"解析后的结构化结果:\n{response}")
+    logger.info(f"结果类型: {type(response)}")
 
-# 用同一解析器解析，得到符合 Person 结构的数据（dict，或可转成 Person 实例）
-response = parser.invoke(result)
-logger.info(f"解析后的结构化结果:\n{response}")
-logger.info(f"结果类型: {type(response)}")
 
 """
 【输出示例】
@@ -75,3 +79,5 @@ content='{"time": "2024年3月28日", "person": "雷军", "event": "小米正式
 {'time': '2024年3月28日', 'person': '雷军', 'event': '小米正式发布首款高性能纯电动轿车SU7，百公里加速2.78秒，续航达800公里，开启预订后24小时订单突破10万辆'}
 2026-02-27 15:01:47.540 | INFO     | __main__:<module>:62 - 结果类型: <class 'dict'>
 """
+if __name__ == "__main__":
+    main()
