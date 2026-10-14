@@ -81,4 +81,5 @@ logger.info(f"结果类型: {type(response)}")  # <class 'Product'>
 name='华为Mate X7' category='智能手机' description='华为Mate X7是一款全新折叠屏旗舰手机，搭载麒麟9010芯片与HarmonyOS 4.2系统，配备8英寸内屏与6.5英寸外屏，支持5G网络与超高速充电技术。'
 2026-02-27 15:02:51.175 | INFO     | __main__:<module>:68 - 结果类型: <class '__main__.Product'>
 """
-
+# 定义pydantic结构，用pyd结构创建输出解析器对象parser；用parser生成结构化命令提示词；提示词附加给message
+# 模型返回response后，将输出给parser过一遍得到解析后的内容

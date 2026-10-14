@@ -10,24 +10,26 @@
 
 from typing import Annotated, TypedDict
 
-# Annotated[int, "年龄，范围0-150"]：类型仍是 int，后面的字符串只是元数据，运行时不会做 0–150 的校验
-Age = Annotated[int, "年龄，范围0-150"]
+def main():
+    # Annotated[int, "年龄，范围0-150"]：类型仍是 int，后面的字符串只是元数据，运行时不会做 0–150 的校验
+    Age = Annotated[int, "年龄，范围0-150"]
 
+    class Person(TypedDict):
+        name: str
+        age: int
+        age2: Age  # 本质还是 int，元数据 "年龄，范围0-150" 不参与运行时校验
 
-class Person(TypedDict):
-    name: str
-    age: int
-    age2: Age  # 本质还是 int，元数据 "年龄，范围0-150" 不参与运行时校验
+    # TypedDict 实例化时不会校验 age2 是否在 0–150，只要类型是 int 即可
+    p = Person(name="z3", age=111, age2=188)
+    print(p)
 
+    # p = Person(name="z3", age="1111")  # 若用字符串赋给 age，部分环境可能报错，取决于具体运行时
 
-# TypedDict 实例化时不会校验 age2 是否在 0–150，只要类型是 int 即可
-p = Person(name="z3", age=111, age2=188)
-print(p)
-
-# p = Person(name="z3", age="1111")  # 若用字符串赋给 age，部分环境可能报错，取决于具体运行时
 
 """
 【输出示例】
 {'name': 'z3', 'age': 111, 'age2': 188}
 """
+if __name__ == "__main__":
+    main()
 

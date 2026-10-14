@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field, ValidationError
 
 # 用 Annotated 结合 Pydantic 的 Field：ge=0, le=150 会在运行时校验，不在范围内会触发 ValidationError
 Age = Annotated[int, Field(ge=0, le=150, description="年龄，范围0-150")]
-
+# Field用于约束字段
 
 class Person(BaseModel):
     name: str
