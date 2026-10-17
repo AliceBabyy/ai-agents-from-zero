@@ -31,6 +31,8 @@ llm = init_chat_model(
 # 按 session_id 保存多份历史，便于多用户/多会话；生产可改为 Redis 等
 store = {}
 
+# BaseChatMessageHistory 是所有历史实现了类的抽象基类，是个规范接口的抽象类，其他历史存储的类都继承这个
+# InMemoryChatMessageHistory 就是其一个具体的实现类，其核心作用还是维护一个message
 
 def get_session_history(session_id: str):
     """
@@ -40,7 +42,17 @@ def get_session_history(session_id: str):
     if session_id not in store:
         store[session_id] = InMemoryChatMessageHistory()
     return store[session_id]
-
+# 如果遇到没加过的会话，就创建一个新的“账本”放进去
+'''
+store结构剖析：
+store = {
+    "user-001": <InMemoryChatMessageHistory 对象 A>,
+    "user-002": <InMemoryChatMessageHistory 对象 B>,
+}
+每个 InMemoryChatMessageHistory 对象是一个消息对象，一个账本
+真正想从里面看到message内容，要调用 .message
+即：store["user-001"].messages
+'''
 
 # 定义 Prompt 模板
 #     - system: 给模型设定角色
@@ -59,10 +71,11 @@ memory_chain = prompt | llm | StrOutputParser()
 # 包装为带历史链：get_session_history 决定「当前 session 用哪份 history」
 with_history = RunnableWithMessageHistory(
     memory_chain,
-    get_session_history,
+    get_session_history, # 得到的是对应会话id的历史会话类对象
     input_messages_key="question",
     history_messages_key="history",
 )
+# 在下面的程序中展现出来，RunnableWithMessageHistory其实就是维护一个message结构，把每一轮的对话加进去而已，但可能其还有更复杂的机制
 
 cfg_user_001 = {"configurable": {"session_id": "user-001"}}
 cfg_user_002 = {"configurable": {"session_id": "user-002"}}

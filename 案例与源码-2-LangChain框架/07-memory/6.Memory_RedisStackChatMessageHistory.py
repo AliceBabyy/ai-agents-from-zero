@@ -3,14 +3,14 @@
 
 对应教程章节：第 16 章 - 记忆与对话历史 → 6、案例代码 → 6.2 持久化：Redis 存储 → Redis Stack 示例
 
-本示例与 Memory_RedisChatMessageHistory.py 的链路完全相同，仅默认连接 Redis Stack 常见宿主机端口 26379。
+本示例与 5.Memory_RedisChatMessageHistory.py 的链路完全相同，仅默认连接 Redis Stack 常见宿主机端口 26379。
 Redis Stack 与原生 Redis 协议兼容，本章对话历史仍然只是把消息写进 Redis；它最大的教学价值是方便你借助 RedisInsight 观察会话数据。
 项目依赖更推荐使用 langchain-redis；若本地环境仍只有 langchain-community，本示例会自动回退，便于旧环境继续运行。
 
 知识点速览：
 - 默认 REDIS_URL=redis://localhost:26379（Redis Stack 常见映射 -p 26379:6379）。
 - 启动 Redis Stack（带 RedisInsight 用 redis/redis-stack）：docker run -d --name redis-stack -p 26379:6379 -p 8001:8001 redis/redis-stack
-- 其余用法同 Memory_RedisChatMessageHistory.py；变化的是默认端口，不是记忆原理。
+- 其余用法同 5.Memory_RedisChatMessageHistory.py；变化的是默认端口，不是记忆原理。
 """
 
 from dotenv import load_dotenv

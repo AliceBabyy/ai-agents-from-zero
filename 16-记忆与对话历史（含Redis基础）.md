@@ -258,12 +258,12 @@ LangChain 提供了多种聊天历史实现（如内存、文件、Redis、Elast
 | 文件                                     | 作用                              |
 | ---------------------------------------- | --------------------------------- |
 | `Memory_IDontKnow.py`                    | 先看无记忆时的问题                |
-| `Memory_RunnableWithMessageHistory.py`   | 最基础的内存版带历史对话          |
-| `Memory_RunnableWithMessageHistoryV2.py` | 多 session 版，对应真实多用户场景 |
-| `Memory_InMemoryChatMessageHistory.py`   | 不走包装器，直接手动操作 history  |
-| `RedisEnvCheck.py`                       | 跑 Redis 版前先做环境校验         |
-| `Memory_RedisChatMessageHistory.py`      | Redis 持久化主案例                |
-| `Memory_RedisStackChatMessageHistory.py` | Redis Stack 可选案例              |
+| `1.Memory_RunnableWithMessageHistory.py`   | 最基础的内存版带历史对话          |
+| `2.Memory_RunnableWithMessageHistoryV2.py` | 多 session 版，对应真实多用户场景 |
+| `3.Memory_InMemoryChatMessageHistory.py`   | 不走包装器，直接手动操作 history  |
+| `4.RedisEnvCheck.py`                       | 跑 Redis 版前先做环境校验         |
+| `5.Memory_RedisChatMessageHistory.py`      | Redis 持久化主案例                |
+| `6.Memory_RedisStackChatMessageHistory.py` | Redis Stack 可选案例              |
 
 这样安排其实很合理：
 
@@ -294,9 +294,9 @@ LangChain 提供了多种聊天历史实现（如内存、文件、Redis、Elast
 
 #### 5.1.1 最基础写法：RunnableWithMessageHistory
 
-【案例源码】`案例与源码-2-LangChain框架/07-memory/Memory_RunnableWithMessageHistory.py`
+【案例源码】`案例与源码-2-LangChain框架/07-memory/1.Memory_RunnableWithMessageHistory.py`
 
-[Memory_RunnableWithMessageHistory.py](案例与源码-2-LangChain框架/07-memory/Memory_RunnableWithMessageHistory.py ":include :type=code")
+[Memory_RunnableWithMessageHistory.py](案例与源码-2-LangChain框架/07-memory/1.Memory_RunnableWithMessageHistory.py ":include :type=code")
 
 这个案例最值得看懂的点有三个：
 
@@ -306,9 +306,9 @@ LangChain 提供了多种聊天历史实现（如内存、文件、Redis、Elast
 
 #### 5.1.2 多 session 写法：按 session_id 维护多份历史
 
-【案例源码】`案例与源码-2-LangChain框架/07-memory/Memory_RunnableWithMessageHistoryV2.py`
+【案例源码】`案例与源码-2-LangChain框架/07-memory/2.Memory_RunnableWithMessageHistoryV2.py`
 
-[Memory_RunnableWithMessageHistoryV2.py](案例与源码-2-LangChain框架/07-memory/Memory_RunnableWithMessageHistoryV2.py ":include :type=code")
+[Memory_RunnableWithMessageHistoryV2.py](案例与源码-2-LangChain框架/07-memory/2.Memory_RunnableWithMessageHistoryV2.py ":include :type=code")
 
 这个案例比上一个更贴近真实项目，因为真实系统里不会只有一个用户，也不会只有一份历史。
 
@@ -318,9 +318,9 @@ LangChain 提供了多种聊天历史实现（如内存、文件、Redis、Elast
 
 #### 5.1.3 直接操作 InMemoryChatMessageHistory
 
-【案例源码】`案例与源码-2-LangChain框架/07-memory/Memory_InMemoryChatMessageHistory.py`
+【案例源码】`案例与源码-2-LangChain框架/07-memory/3.Memory_InMemoryChatMessageHistory.py`
 
-[Memory_InMemoryChatMessageHistory.py](案例与源码-2-LangChain框架/07-memory/Memory_InMemoryChatMessageHistory.py ":include :type=code")
+[Memory_InMemoryChatMessageHistory.py](案例与源码-2-LangChain框架/07-memory/3.Memory_InMemoryChatMessageHistory.py ":include :type=code")
 
 这个案例不再通过 `RunnableWithMessageHistory` 自动管理，而是手动：
 
@@ -454,17 +454,17 @@ LRANGE message_store:user-001 0 -1
 1. Python 里的 `redis` 包是否安装正常
 2. Redis 服务是否真的能连上
 
-【案例源码】`案例与源码-2-LangChain框架/07-memory/RedisEnvCheck.py`
+【案例源码】`案例与源码-2-LangChain框架/07-memory/4.RedisEnvCheck.py`
 
-[RedisEnvCheck.py](案例与源码-2-LangChain框架/07-memory/RedisEnvCheck.py ":include :type=code")
+[RedisEnvCheck.py](案例与源码-2-LangChain框架/07-memory/4.RedisEnvCheck.py ":include :type=code")
 
 这个脚本建议作为“跑 Redis 案例前的第一步”，因为很多问题其实不是 LangChain 的问题，而是 Redis 环境本身没就绪。
 
 #### 5.2.6 案例：Redis 对话历史
 
-【案例源码】`案例与源码-2-LangChain框架/07-memory/Memory_RedisChatMessageHistory.py`
+【案例源码】`案例与源码-2-LangChain框架/07-memory/5.Memory_RedisChatMessageHistory.py`
 
-[Memory_RedisChatMessageHistory.py](案例与源码-2-LangChain框架/07-memory/Memory_RedisChatMessageHistory.py ":include :type=code")
+[Memory_RedisChatMessageHistory.py](案例与源码-2-LangChain框架/07-memory/5.Memory_RedisChatMessageHistory.py ":include :type=code")
 
 这是本章最重要的持久化案例。它和内存版相比，真正变化的核心只有一处：
 
@@ -482,9 +482,9 @@ LRANGE message_store:user-001 0 -1
 
 #### 5.2.7 案例：使用 Redis Stack（可选）
 
-【案例源码】`案例与源码-2-LangChain框架/07-memory/Memory_RedisStackChatMessageHistory.py`
+【案例源码】`案例与源码-2-LangChain框架/07-memory/6.Memory_RedisStackChatMessageHistory.py`
 
-[Memory_RedisStackChatMessageHistory.py](案例与源码-2-LangChain框架/07-memory/Memory_RedisStackChatMessageHistory.py ":include :type=code")
+[Memory_RedisStackChatMessageHistory.py](案例与源码-2-LangChain框架/07-memory/6.Memory_RedisStackChatMessageHistory.py ":include :type=code")
 
 这个案例和上一节主案例的逻辑基本一致，只是默认连接到了 Redis Stack 常见端口。
 

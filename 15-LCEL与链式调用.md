@@ -110,9 +110,9 @@ result = parser.invoke(ai_message)
 这样一来，三步就被统一成了同一种风格：
 
 ```python
-prompt_value = prompt.invoke({"question": "什么是 LangChain？"})
-ai_message = model.invoke(prompt_value)
-result = parser.invoke(ai_message)
+prompt_value = prompt.invoke({"question": "什么是 LangChain？"}) # 填占位符并返回构成message
+ai_message = model.invoke(prompt_value) # 调用模型
+result = parser.invoke(ai_message) # 解析模型输出
 ```
 
 这背后最大的价值是：**组件之间更容易替换**；**流程更容易串联**；**链本身也可以继续被当作一个组件使用**；**中间结果传递方式更统一，不需要每一步都手写很多适配代码**。

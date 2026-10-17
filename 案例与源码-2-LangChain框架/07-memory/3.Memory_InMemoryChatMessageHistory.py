@@ -28,6 +28,7 @@ llm = init_chat_model(
 
 # 创建内存版历史实例（BaseChatMessageHistory 的实现）
 history = InMemoryChatMessageHistory()
+# 创建一个记忆存储账本
 
 # 手动添加用户消息并调用模型；模型输入为当前全部 messages
 history.add_user_message("我叫张三，我的爱好是学习")
