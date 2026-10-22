@@ -28,15 +28,20 @@ def add_number(a: int, b: int) -> int:
     return a + b
 
 
-# 打印工具属性：带 args_schema 时，args 中会包含 Field 的 description
-logger.info(f"name = {add_number.name}")
-logger.info(f"args = {add_number.args}")
-logger.info(f"description = {add_number.description}")
-logger.info(f"return_direct = {add_number.return_direct}")
+def main():
+    # 打印工具属性：带 args_schema 时，args 中会包含 Field 的 description
+    logger.info(f"name = {add_number.name}")
+    logger.info(f"args = {add_number.args}")
+    logger.info(f"description = {add_number.description}")
+    logger.info(f"return_direct = {add_number.return_direct}")
 
-# 调用工具：传入字典，Pydantic 会做类型校验与转换
-res = add_number.invoke({"a": 1, "b": 2})
-logger.info(res)
+    # 调用工具：传入字典，Pydantic 会做类型校验与转换
+    res = add_number.invoke({"a": 1, "b": 2})
+    logger.info(res)
+
+
+if __name__ == "__main__":
+    main()
 
 """
 【输出示例】

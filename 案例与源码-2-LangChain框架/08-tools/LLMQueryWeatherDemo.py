@@ -11,8 +11,6 @@
 
 from dotenv import load_dotenv
 
-load_dotenv(encoding="utf-8")
-
 import os
 from langchain_core.output_parsers import JsonOutputKeyToolsParser, StrOutputParser
 from langchain_core.prompts import PromptTemplate
@@ -20,39 +18,47 @@ from langchain_openai import ChatOpenAI
 from loguru import logger
 from QueryWeatherTool import get_weather
 
-# 初始化大模型（教程 5.4：需可调用工具的大模型）
-llm = ChatOpenAI(
-    model="qwen-plus",
-    api_key=os.getenv("aliQwen-api"),
-    base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
-)
 
-# 将工具绑定到模型：请求时会把 get_weather 的名称、描述、参数 schema 发给模型，模型随后可能返回 tool_calls
-llm_with_tools = llm.bind_tools([get_weather])
+def main():
+    load_dotenv(encoding="utf-8")
 
-# 解析器：从模型输出中提取“命中的天气工具参数”，得到可直接传给 get_weather 的入参
-parser = JsonOutputKeyToolsParser(key_name=get_weather.name, first_tool_only=True)
+    # 初始化大模型（教程 5.4：需可调用工具的大模型）
+    llm = ChatOpenAI(
+        model="qwen-plus",
+        api_key=os.getenv("aliQwen-api"),
+        base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+    )
 
-# 天气查询链：用户问题 → 模型（可能返回 tool_calls）→ 解析出参数 → 执行 get_weather → 得到天气 JSON 字符串
-get_weather_chain = llm_with_tools | parser | get_weather
+    # 将工具绑定到模型：请求时会把 get_weather 的名称、描述、参数 schema 发给模型，模型随后可能返回 tool_calls
+    llm_with_tools = llm.bind_tools([get_weather])
 
-# 输出链：把天气 JSON 塞进提示词，由模型转成更适合用户阅读的自然语言描述
-output_prompt = PromptTemplate.from_template(
-    """你将收到一段 JSON 格式的天气数据{weather_json}，请用简洁自然的方式将其转述给用户。
+    # 解析器：从模型输出中提取“命中的天气工具参数”，得到可直接传给 get_weather 的入参
+    parser = JsonOutputKeyToolsParser(key_name=get_weather.name, first_tool_only=True)
+
+    # 天气查询链：用户问题 → 模型（可能返回 tool_calls）→ 解析出参数 → 执行 get_weather → 得到天气 JSON 字符串
+    get_weather_chain = llm_with_tools | parser | get_weather
+
+    # 输出链：把天气 JSON 塞进提示词，由模型转成更适合用户阅读的自然语言描述
+    output_prompt = PromptTemplate.from_template(
+        """你将收到一段 JSON 格式的天气数据{weather_json}，请用简洁自然的方式将其转述给用户。
     以下是天气 JSON 数据：
     请将其转换为中文天气描述，例如：
     "北京现在天气：多云，气温 28℃，体感有点闷热（约 32℃），湿度 75%，微风（东南风 2 米/秒），
     能见度很好，大约 10 公里。建议穿短袖短裤。适合做户外运动。"
     """
-)
-output_parser = StrOutputParser()
-output_chain = output_prompt | llm | output_parser
+    )
+    output_parser = StrOutputParser()
+    output_chain = output_prompt | llm | output_parser
 
-# 完整链：先拿到天气 JSON，再包装成 {"weather_json": x} 送入输出链，得到最终中文描述
-full_chain = get_weather_chain | (lambda x: {"weather_json": x}) | output_chain
+    # 完整链：先拿到天气 JSON，再包装成 {"weather_json": x} 送入输出链，得到最终中文描述
+    full_chain = get_weather_chain | (lambda x: {"weather_json": x}) | output_chain
 
-result = full_chain.invoke("请问北京今天的天气如何？")
-logger.info(result)
+    result = full_chain.invoke("请问北京今天的天气如何？")
+    logger.info(result)
+
+
+if __name__ == "__main__":
+    main()
 
 """
 【输出示例】

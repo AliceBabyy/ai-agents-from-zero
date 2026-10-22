@@ -19,22 +19,27 @@ class User(BaseModel):
     age: int = 0  # 可选字段，默认 0；传入值会被校验并转换
 
 
-try:
-    # 合法：id=42 为 int，实例化成功
-    u = User(id=42, name="z3")
-except ValidationError as e:
-    print(e)
-print(u.id, type(u.id))  # 42 <class 'int'>
+def main():
+    try:
+        # 合法：id=42 为 int，实例化成功
+        u = User(id=42, name="z3")
+    except ValidationError as e:
+        print(e)
+    print(u.id, type(u.id))  # 42 <class 'int'>
 
-print()
-print()
+    print()
+    print()
 
-# 非法：id="abc" 不是 int，StrictInt 不做模糊转换，直接抛出 ValidationError
-try:
-    User(id="abc", name="Bob")
-except ValidationError as e:
-    print(e)
-# 输出示例：
-# 1 validation error for User
-# id
-#   value is not a valid integer (type=type_error.integer)
+    # 非法：id="abc" 不是 int，StrictInt 不做模糊转换，直接抛出 ValidationError
+    try:
+        User(id="abc", name="Bob")
+    except ValidationError as e:
+        print(e)
+    # 输出示例：
+    # 1 validation error for User
+    # id
+    #   value is not a valid integer (type=type_error.integer)
+
+
+if __name__ == "__main__":
+    main()

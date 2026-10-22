@@ -54,10 +54,15 @@ def get_weather(loc: str) -> str:
     return json.dumps(data)
 
 
-# 本地测试：单参数工具可直接传值；若和更通用的工具调用风格保持一致，也可传 {"loc": "..."}
-# result = get_weather.invoke("shanghai")
-result = get_weather.invoke("beijing")
-print(result)
+def main():
+    # 本地测试：单参数工具可直接传值；若和更通用的工具调用风格保持一致，也可传 {"loc": "..."}
+    # result = get_weather.invoke("shanghai")
+    result = get_weather.invoke("beijing")
+    print(result)
+
+
+if __name__ == "__main__":
+    main()
 
 """
 【输出示例】
