@@ -52,8 +52,9 @@ def main():
 
     # 完整链：先拿到天气 JSON，再包装成 {"weather_json": x} 送入输出链，得到最终中文描述
     full_chain = get_weather_chain | (lambda x: {"weather_json": x}) | output_chain
+    # lambda x 是接受一个入参x，{"weather_json": x}整体是函数返回内容
 
-    result = full_chain.invoke("请问北京今天的天气如何？")
+    result = full_chain.invoke("请问洛阳今天的天气如何？")
     logger.info(result)
 
 

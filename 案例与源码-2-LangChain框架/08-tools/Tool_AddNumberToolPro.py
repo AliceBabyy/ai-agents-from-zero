@@ -16,7 +16,6 @@ from pydantic import BaseModel, Field
 # Pydantic 模型：定义“工具参数接口”，字段 description 会进入工具参数 schema
 class FieldInfo(BaseModel):
     """定义加法运算所需的参数结构"""
-
     a: int = Field(description="第1个参数")
     b: int = Field(description="第2个参数")
 

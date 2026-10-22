@@ -10,6 +10,15 @@
 """
 from pydantic import BaseModel, ValidationError, StrictInt
 
+"""
+BaseModel是pydantic提供的一个基类，继承自动获得pydantic能力：
+1. 字段声明
+2. 数据类型自动校验
+3. 数据类型自动转换
+4. 自动生成json schema
+
+相当于定义一个结构化的数据格式说明书
+"""
 
 # 继承 BaseModel：实例化时按类型注解校验，不合规则抛出 ValidationError
 class User(BaseModel):
