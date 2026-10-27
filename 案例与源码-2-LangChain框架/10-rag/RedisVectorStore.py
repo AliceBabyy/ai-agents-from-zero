@@ -18,46 +18,52 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# 1. 初始化嵌入模型
-embeddingsModel = DashScopeEmbeddings(
-    model="text-embedding-v3", dashscope_api_key=os.getenv("aliQwen-api")
-)
+def main():
+    # 1. 初始化嵌入模型
+    embeddingsModel = DashScopeEmbeddings(
+        model="text-embedding-v3", dashscope_api_key=os.getenv("aliQwen-api")
+    )
 
-# 2. 待写入的文本及（可选）元数据
-texts = [
-    "我喜欢吃苹果",
-    "苹果是我最喜欢吃的水果",
-    "我喜欢用苹果手机",
-]
+    # 2. 待写入的文本及（可选）元数据
+    texts = [
+        "我喜欢吃苹果",
+        "苹果是我最喜欢吃的水果",
+        "我喜欢用苹果手机",
+    ]
+
+    # 批量转成向量：这里只是为了先观察向量维度和内容；真正写入时 add_texts 内部会再次完成向量化
+    embeddings = embeddingsModel.embed_documents(texts)
+    print(embeddings)
+
+    for i, vec in enumerate(embeddings, 1):
+        print(f"文本 {i}: {texts[i - 1]}")
+        print(f"向量长度: {len(vec)}")
+        print(f"前5个向量值: {vec[:5]}\n")
+
+    # 定义每条文本对应的元数据信息
+    # metadata = [{"segment_id": "1"}, {"segment_id": "2"}, {"segment_id": "3"}]
+
+    # 定义每条文本对应的元数据信息；真实 RAG 中这些 metadata 往往来自 Document.metadata，也可作为来源展示或过滤条件
+    metadata = [{"segment_id": str(i)} for i in range(1, len(texts) + 1)]
+
+    # 3. Redis 连接与索引名（需与检索案例一致）
+    config = RedisConfig(
+        index_name="newsgroups",
+        redis_url="redis://localhost:26379",
+    )
+
+    # 创建 Redis 向量存储实例：此时只是“连上库 + 指定索引配置”，还没真正写入文本；真正写入发生在 add_texts()
+    vector_store = RedisVectorStore(embeddingsModel, config=config)
+
+    # 4. 将文本与元数据写入向量库（add_texts 内部会调 embed_documents，无需先算向量）
+    ids = vector_store.add_texts(texts, metadata)
 
 
-# 批量转成向量：这里只是为了先观察向量维度和内容；真正写入时 add_texts 内部会再次完成向量化
-embeddings = embeddingsModel.embed_documents(texts)
-for i, vec in enumerate(embeddings, 1):
-    print(f"文本 {i}: {texts[i-1]}")
-    print(f"向量长度: {len(vec)}")
-    print(f"前5个向量值: {vec[:10]}\n")
+    # 打印前5个存储记录的ID
+    print(ids[0:5])
 
-# 定义每条文本对应的元数据信息
-# metadata = [{"segment_id": "1"}, {"segment_id": "2"}, {"segment_id": "3"}]
-
-# 定义每条文本对应的元数据信息；真实 RAG 中这些 metadata 往往来自 Document.metadata，也可作为来源展示或过滤条件
-metadata = [{"segment_id": str(i)} for i in range(1, len(texts) + 1)]
-
-# 3. Redis 连接与索引名（需与检索案例一致）
-config = RedisConfig(
-    index_name="newsgroups",
-    redis_url="redis://localhost:26379",
-)
-
-# 创建 Redis 向量存储实例：此时只是“连上库 + 指定索引配置”，还没真正写入文本；真正写入发生在 add_texts()
-vector_store = RedisVectorStore(embeddingsModel, config=config)
-
-# 4. 将文本与元数据写入向量库（add_texts 内部会调 embed_documents，无需先算向量）
-ids = vector_store.add_texts(texts, metadata)
-
-# 打印前5个存储记录的ID
-print(ids[0:5])
+if __name__ == "__main__":
+    main()
 
 """
 【输出示例】

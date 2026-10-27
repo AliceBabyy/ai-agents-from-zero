@@ -20,32 +20,53 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# 1. 初始化嵌入模型
-embeddings = DashScopeEmbeddings(
-    model="text-embedding-v3", dashscope_api_key=os.getenv("aliQwen-api")
-)
+def main():
+    # 1. 初始化嵌入模型
 
-# 2. 构造 Document 列表：page_content 是正文，metadata 是附加信息
-# 在完整 RAG 中，这些 Document 往往来自“加载器 + 分割器”；本案例先用手写数据聚焦理解向量库存取流程
-texts = [
-    "通义千问是阿里巴巴研发的大语言模型。",
-    "Redis 是一个高性能的键值存储系统，支持向量检索。",
-    "LangChain 可以轻松集成各种大模型和向量数据库。",
-]
-documents = [
-    Document(page_content=text, metadata={"source": "manual"}) for text in texts
-]
+    embeddings = DashScopeEmbeddings(
+        model="text-embedding-v3", dashscope_api_key=os.getenv("aliQwen-api")
+    )
 
-# 3. 一次性写入 Redis：内部会对每个 Document 的 page_content 做向量化，并建立可检索索引
-vector_store = Redis.from_documents(
-    documents=documents,
-    embedding=embeddings,
-    redis_url="redis://localhost:26379",
-    index_name="my_index11",
-)
+    # 2. 构造 Document 列表：page_content 是正文，metadata 是附加信息
+    # 在完整 RAG 中，这些 Document 往往来自“加载器 + 分割器”；本案例先用手写数据聚焦理解向量库存取流程
+    texts = [
+        "通义千问是阿里巴巴研发的大语言模型。",
+        "Redis 是一个高性能的键值存储系统，支持向量检索。",
+        "LangChain 可以轻松集成各种大模型和向量数据库。",
+    ]
+    documents = [
+        Document(page_content=text, metadata={"source": "manual"}) for text in texts
+    ]
 
-# 4. 得到检索器：当你 invoke 查询文本时，LangChain 会先把问题向量化，再在库中做相似度检索
-retriever = vector_store.as_retriever(search_kwargs={"k": 2})
-results = retriever.invoke("LangChain 和 Redis 怎么结合？")
-for res in results:
-    print(res.page_content)
+    print(documents)
+
+    # 3. 一次性写入 Redis：内部会对每个 Document 的 page_content 做向量化，并建立可检索索引
+    vector_store = Redis.from_documents(
+        documents=documents,
+        embedding=embeddings,
+        redis_url="redis://localhost:26379",
+        index_name="my_index11", #redis索引名字
+    )
+# 该方法内部会做的事情：
+# 1. 按照url连接redis
+# 2. 取出所有Document 的 page_content，组成文本列表
+# 3. 调用embeddings.embed_documents，批量对每条文本进行向量化
+# 4. 将“原文+向量化结果+元数据+id” 存入redis
+# 5. 在redis中建立向量索引
+# 6. 返回一个vector_store对象
+
+    # 4. 得到检索器：当你 invoke 查询文本时，LangChain 会先把问题向量化，再在库中做相似度检索
+    retriever = vector_store.as_retriever(search_kwargs={"k": 2}) # 得到并配置一个检索器
+    results = retriever.invoke("Redis 是什么？") # 用检索器查询
+    # 这是embedding第二次被调用的地方，内部发生的操作如下：
+    # 1. 拿到用户查询问题
+    # 2. 调用embeddings.embed_query(query)把用户问题向量化
+    # 3. 拿这个向量化问题去redis索引里做相似度检索
+    # 4. 拿k=2条最相似的检索结果
+    # 5. 还原成Document列表返回
+    for res in results:
+        print(res.page_content)
+
+if __name__ == "__main__":
+    main()
+

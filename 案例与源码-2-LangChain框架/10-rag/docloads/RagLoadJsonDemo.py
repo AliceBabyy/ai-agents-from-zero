@@ -17,9 +17,9 @@ from langchain_community.document_loaders import JSONLoader
 
 json_path = Path(__file__).resolve().parent / "assets" / "sample.json"
 docs = JSONLoader(
-    file_path=json_path,
-    jq_schema=".",  # 提取所有字段
-    text_content=False,  # 是否按字符串处理内容
+    file_path=json_path, # 文件路径
+    jq_schema=".",  # 提取所有字段。由于json是嵌套结构，所以 . 表示一个层级
+    text_content=False,  # 控制提取出的内容以什么形式返回，是否按字符串处理。false表示按原结构返回，true表示按字符串处理
 ).load()
 
 print(docs)

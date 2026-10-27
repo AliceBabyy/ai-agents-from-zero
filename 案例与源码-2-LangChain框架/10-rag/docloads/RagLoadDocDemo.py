@@ -15,11 +15,15 @@ from pathlib import Path
 # pip install langchain_community unstructured[docx] python-docx
 from langchain_community.document_loaders import UnstructuredWordDocumentLoader
 
+# 算出文件的绝对路径，防止换环境后找不到文件
 document_path = Path(__file__).resolve().parent / "assets" / "alibaba-more.docx"
+# 创建加载器并加载
 docs = UnstructuredWordDocumentLoader(
-    file_path=document_path,
-    mode="single",  # single 整篇一个 Document；elements 按元素切分
+    # UnstructuredWordDocumentLoader是lc提供的word文档加载器，负责把.docx文件读成Document对象
+    file_path=document_path, # 文件路径
+    mode="single",  # 文档拆分方式。 single表示整篇文档作为一个 Document；elements表示按元素切分为多个document 如标题、页眉、段落等
 ).load()
+# 每个document对象包含两个属性，page_content和metadata，前者就是个字符串，后者是字典
 
 print(docs)
 """
